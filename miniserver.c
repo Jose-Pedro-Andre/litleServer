@@ -6,6 +6,14 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#include <sys/select.h>
+// #include <>
+
+typedef struct client_t
+{
+    int id;
+    char msg[100000];
+} client_array;
 
 int ft_create_socket(void)
 {
@@ -19,10 +27,12 @@ int ft_create_socket(void)
     return sfd;
 }
 
-int ft_bind_and_listenPort(int sfd, char *port)
+void ft_bind_and_listenPort(char *port)
 {
     struct sockaddr_in servaddr;
+    int sfd;
 
+    sfd = ft_create_socket();
     memset(&servaddr, 0, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr = htonl(2130706433);
@@ -33,6 +43,30 @@ int ft_bind_and_listenPort(int sfd, char *port)
         exit(EXIT_FAILURE);
     }
 
-    
+    if (listen(sfd, 10) != 0)
+    {
+        perror("Error in listen");
+        exit(EXIT_FAILURE);
+    }
+}
 
+int main(int ac, char **av)
+{
+    if (ac != 2)
+    {
+        fprintf(stderr, "arguments invalid\n");
+        return 1;
+    }
+    client_array c_array[1024];
+    fd_set set_read, set_write, master_set;
+
+    memset(&master_set, 0, sizeof(master_set));
+    char write_b[100000], read_b[100000];
+
+    ft_bind_and_listenPort(av[1]);
+    while (1)
+    {
+        
+    }
+    
 }
