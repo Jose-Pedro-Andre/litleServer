@@ -27,7 +27,7 @@ int ft_create_socket(void)
     return sfd;
 }
 
-void ft_bind_and_listenPort(char *port)
+int ft_bind_and_listenPort(char *port)
 {
     struct sockaddr_in servaddr;
     int sfd;
@@ -48,6 +48,7 @@ void ft_bind_and_listenPort(char *port)
         perror("Error in listen");
         exit(EXIT_FAILURE);
     }
+    return sfd;
 }
 
 int main(int ac, char **av)
@@ -57,16 +58,23 @@ int main(int ac, char **av)
         fprintf(stderr, "arguments invalid\n");
         return 1;
     }
+    int fd_server;
     client_array c_array[1024];
     fd_set set_read, set_write, master_set;
 
     memset(&master_set, 0, sizeof(master_set));
     char write_b[100000], read_b[100000];
 
-    ft_bind_and_listenPort(av[1]);
+    fd_server = ft_bind_and_listenPort(av[1]);
+    int max_fd = fd_server;
+    FD_ZERO(&master_set);
+    FD_SET(fd_server, &master_set);
     while (1)
     {
-        
+        set_read = master_set;
+        set_write = master_set;
+        if (select(max_fd + 1, &set_read, &set_write, NULL, NULL) <= 0)
+            continue;
     }
     
 }
