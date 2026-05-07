@@ -45,7 +45,7 @@ int ft_bind_and_listenPort(char *port, char *host)
     sfd = ft_create_socket();
     memset(&servaddr, 0, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
-    servaddr.sin_addr.s_addr = htonl(addr.s_addr);
+    servaddr.sin_addr.s_addr = htonl(2130706433);
     servaddr.sin_port = htons(atoi(port));
     if (bind(sfd, (const struct sockaddr*)&servaddr, sizeof(servaddr)) != 0)
     {
@@ -108,7 +108,6 @@ void message_from_any_client(int client)
             c_array[client].msg[j] = 0;
             sprintf(buffer_send, "client %d: %s",c_array[client].id, c_array[client].msg);
             send_all_client(client);
-            j = -1;
             bzero(c_array[client].msg, sizeof(c_array[client].msg));
          }
     }
@@ -116,7 +115,7 @@ void message_from_any_client(int client)
 
 int main(int ac, char **av)
 {
-    if (ac != 2)
+    if (ac != 3)
     {
         fprintf(stderr, "arguments invalid\n");
         return 1;
@@ -124,23 +123,23 @@ int main(int ac, char **av)
     int fd_server;
 
     fd_server = ft_bind_and_listenPort(av[2], av[1]);
-    int max_fd = fd_server;
+     max_clients = fd_server;
     FD_ZERO(&master_set);
     FD_SET(fd_server, &master_set);
     while (1)
     {
         set_read = master_set;
         set_write = master_set;
-        if (select(max_fd + 1, &set_read, &set_write, NULL, NULL) <= 0)
+        if (select(max_clients + 1, &set_read, &set_write, NULL, NULL) <= 0)
             continue;
-        for(int fd = 0; fd <= max_fd; fd++)
+        for(int fd = 0; fd <= max_clients; fd++)
         {
             if (fd == fd_server && FD_ISSET(fd, &set_read))
             {
                 if (!accept_client(fd))
                     continue;
             }
-            else if (FD_ISSET(fd, &set_write))
+            else if (FD_ISSET(fd, &set_read))
             {
                 message_from_any_client(fd);
             }
