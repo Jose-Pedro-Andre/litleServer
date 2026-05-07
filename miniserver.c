@@ -89,7 +89,7 @@ int accept_client(int sockfd)
 
 void message_from_any_client(int client)
 {
-    int bytes = recv(client, buffer_recv, strlen(buffer_recv), 0);
+    int bytes = recv(client, buffer_recv, sizeof(buffer_recv), 0);
     if (bytes <= 0)
     {
 
@@ -99,17 +99,19 @@ void message_from_any_client(int client)
         send_all_client(client);
         return ;
     }
-    size_t j =  strlen(c_array[client].msg);
-    for(int i = 0; i < bytes && j < sizeof( c_array[client].msg); j++, i++)
+    size_t j =  0;
+
+    for (int i = 0; i < bytes; i++, j++)
     {
-         c_array[client].msg[j] = buffer_recv[i];
-         if (c_array[client].msg[j] == '\n')
-         {
+        c_array[client].msg[j] = buffer_recv[i];
+        if (buffer_recv[i] == '\n')
+        {
             c_array[client].msg[j] = 0;
-            sprintf(buffer_send, "client %d: %s",c_array[client].id, c_array[client].msg);
+            sprintf(buffer_send, "client %d: %s\n",c_array[client].id, c_array[client].msg);
             send_all_client(client);
             bzero(c_array[client].msg, sizeof(c_array[client].msg));
-         }
+            j = 0;
+        }
     }
 }
 
@@ -123,7 +125,8 @@ int main(int ac, char **av)
     int fd_server;
 
     fd_server = ft_bind_and_listenPort(av[2], av[1]);
-     max_clients = fd_server;
+    max_clients = fd_server;
+    
     FD_ZERO(&master_set);
     FD_SET(fd_server, &master_set);
     while (1)
